@@ -29,6 +29,37 @@ class StdDocumentController extends Controller
         }
     }
 
+    /*public function ObtCorrelativo(Request $request){
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Basic dXNlcm1waWFwaTokVXNlck1QMUFQMSU=',
+            'Cookie' => 'PHPSESSID=k27808mn4mlo7b0ep2mmqlhsf1'
+        ])->post('https://intranet.igp.gob.pe/std/cInterfaseUsuario_SITD/mpi/ws_sad_consulta_correlativo.php', [
+            'anio' => $request->input('anio'),
+            'unidad_organica' => $request->input('unidad_organica'),
+            'tipo_documento' => $request->input(''),
+            'correlativo' => $request->input(''),
+        ]);
+    
+        if ($response->successful()) {
+            $data = $response->json();
+            $resultados = []; // Inicializar un array para almacenar los correlativos y tipos de documento
+
+            foreach ($data['sede'] as $sede) {
+                if (isset($sede['nCorrelativo']) && isset($sede['cCodTipoDoc'])) {
+                    // Agregar un array asociativo con nCorrelativo y tipo_documento
+                    $resultados[] = [
+                        'tipo_documento' => $sede['cCodTipoDoc'],
+                        'nCorrelativo' => $sede['nCorrelativo'],
+                    ];
+                }
+            }
+            return response()->json($resultados); // Retornar el array de resultados
+        } else {
+            return response()->json(['error' => 'Error al enviar los datos.'], 500);
+        }
+    }*/
+
     public function ObtDocumento(Request $request){
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
@@ -138,99 +169,4 @@ class StdDocumentController extends Controller
             return response()->json(['error' => 'Error al consultar el correlativo'], 500);
         }
     } 
-
-    /*
-    public function consultar(Request $request){
-
-        // Extraer y almacenar los parámetros en variables
-    $anio = $request->input('anio');
-    $unidad_organica = $request->input('unidad_organica');
-    $tipo_documento = $request->input('tipo_documento');
-    $correlativo = $request->input('correlativo');
-    $response1 = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Basic dXNlcm1waWFwaTokVXNlck1QMUFQMSU=',
-            'Cookie' => 'PHPSESSID=k27808mn4mlo7b0ep2mmqlhsf1'
-    ])->post('https://intranet.igp.gob.pe/std/cInterfaseUsuario_SITD/mpi/ws_sad_consulta_correlativo.php', [
-            'anio' => $anio,
-            'unidad_organica' => $unidad_organica,
-            'tipo_documento' => $tipo_documento,
-            'correlativo' => $correlativo
-    ]);
-
-
-    if ($response1->successful()) {
-        $data = $response1->json();
-        $nCorrelativoSTD = $data['sede'][0]['nCorrelativo'];
-    } else {
-        return response()->json(['error' => 'Error al enviar los datos.'], 500);
-    }
-
-        $maxCorrelativoDB=DB::table('std_documents')
-        ->where('anio',$anio)
-        ->where('tipo_documental_id',$tipo_documento)
-        ->max('nro_correlativo');
-    
-
-    if ($nCorrelativoSTD>0) {
-        $response2 = Http::withHeaders([
-                'Content-Type' => 'application/json',
-                'Authorization' => 'Basic dXNlcm1waWFwaTokVXNlck1QMUFQMSU=',
-                'Cookie' => 'PHPSESSID=k27808mn4mlo7b0ep2mmqlhsf1'
-        ])->post('https://intranet.igp.gob.pe/std/cInterfaseUsuario_SITD/mpi/ws_sad_consulta_documento.php', [
-                'anio' => $anio,
-                'unidad_organica' => $unidad_organica,
-                'tipo_documento' => $tipo_documento,
-                'correlativo' => $nCorrelativoSTD
-        ]);
-
-        if ($response2->successful()) {
-            $data = $response2->json();
-            $cAsunto=$data['sede'][0]['cAsunto'];
-            $iCodOficinaRegistro=$data['sede'][0]['iCodOficinaRegistro'];
-            $cCodificacion=$data['sede'][0]['cCodificacion'];
-            $cCodTipoDoc=$data['sede'][0]['cCodTipoDoc'];
-            $fFecDocumento=$data['sede'][0]['fFecDocumento'];
-            $cNombreNuevo=$data['sede'][0]['cNombreNuevo'];
-
-            $sql_insert= DB::table('std_documents')->insert([
-                'asunto' => $cAsunto,
-                'nro_correlativo' => $nCorrelativoSTD,
-                'anio' => $anio,
-                'UnidadOrganicaId' => $iCodOficinaRegistro,
-                'tipo_documental_id' => $cCodTipoDoc,
-                'cCodificacion' => $cCodificacion,
-                'fFecDocumento' => $fFecDocumento,
-                'cNombreNuevo' => $cNombreNuevo
-            ]);
-            
-            if ($sql_insert) {
-                return view('documentos', 'Datos insertados');
-            }else {
-                return response()->json(['error' => 'Error al enviar los datos para insertar'], 500);
-            }
-
-        } else {
-                return response()->json(['error' => 'Error al enviar los datos'], 500);
-        }
-    }
-
-    return view('documentos', compact('sql'));
-
-    }
-
-    public function index() {
-        //$docs = DB::table('std_documents')->where('anio', '2024')->first();
-        //$docs=StdDocument::all();
-        $sql=DB::table('std_documents')->insert([
-            'asunto' => 'Este es el asunto',
-            'nro_correlativo' => '10',
-            'anio' => '2024',
-            'UnidadOrganicaId' => '1',
-            'tipo_documental_id' => '12',
-            'cCodificacion' => '11'
-        ]);
-        return view('documentos', compact('sql'));
-    }*/
-
 }

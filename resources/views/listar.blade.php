@@ -2,110 +2,101 @@
     use Carbon\Carbon;
 @endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Redoc</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="box" id="listado">
-        <div class="box-header">
-            <h2>Ordenamiento:</h2>
-                    <div class="box-body">
-                        @foreach ($documentos as $documento)
-                            <div class="active">
-                                <div class="repositorio">
-                                    <div class="secondary-submision">
-                                        <ul class="artifact-list">
-                                            <li class="artifact-item">
-                                                <div class="item-wrapper">
-                                                    <div class="thumbnail-wrapper">
-                                                        <div class="artifact-preview">
-                                                            @if ($documento->url_valida==true)
-                                                                <a href="https://intranet.igp.gob.pe/redoc/assets/uploads/documentos/{{ $documento->pdf_convenio }}" target="_blank">
-                                                                    <img src="https://intranet.igp.gob.pe/redoc/themes/Mirage/images/documento-firma.png" alt="Thumbnail">
-                                                                </a>
-                                                            @else
-                                                                    <img src="https://intranet.igp.gob.pe/redoc/themes/Mirage/images/no-file.png" alt="Thumbnail">
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                    <dvi class="artifact-description">
-                                                        <div class="artifact-info">
-                                                            <span class="author">
-                                                                <b>NRO EXPEDIENTE:</b>
-                                                                @if ($documento->nro_expediente!=null)
-                                                                    <span>{{$documento->nro_expediente}}</span>
-                                                                @else
-                                                                    <span>Sin expediente</span>
-                                                                @endif
-                                                            </span>
-                                                            ||
-                                                            <span class="publisher-date">
-                                                                <span class="publisher">Fecha del documento:</span>
-                                                                <span class="date">{{ Carbon::parse($documento->fecha_documento)->locale('es')->isoFormat('dddd D [de] MMMM [de] YYYY') }}</span>
-                                                            </span>
-                                                            <div class="btn-box-tool">
-                                                                <a href="" class="btn-info">Editar</a>
-                                                                <a href="" class="btn-danger">Eliminar</a>
-                                                            </div>
-                                                        </div>
-                                                        <div class="artifact-title">
-                                                            <span>
-                                                                <b>{{$documento->nombre}}</b>
-                                                            </span>
-                                                        </div>
-                                                        <div class="artifact-abstract">
-                                                            <p>
-                                                                <span>
-                                                                    Oficina:
-                                                                    @foreach ($oficinas as $oficina )
-                                                                        @if ($documento->OrganoLinealId==$oficina->OrganoLinealId)
-                                                                            {{$oficina->nombre}}
-                                                                        @endif
-                                                                    @endforeach
-                                                                </span>
-                                                            </p>
-                                                            <p>
-                                                                <span>
-                                                                    Nro Correlativo: 
-                                                                    {{$documento->nro_correlativo}}</span>
-                                                            </p>
-                                                            <p>
-                                                                <span>
-                                                                    Tipo Documental:
-                                                                    @foreach ($tipoDoc as $tipo )
-                                                                        @if ($documento->tipo_documental_id==$tipo->id)
-                                                                            <b>{{$tipo->nombre}}</b>
-                                                                        @endif
-                                                                    @endforeach
-                                                                </span>
-                                                            </p>
-                                                        </div>
-                                                    </dvi>
-                                                </div>
-                                            </li>
-                                        </ul>
+    <div class="container contenido-principal">
+        <div>Esta es una seccion</div>
+        <div class="active">
+            <div>
+                <button type="button" class="btn btn-primary">Actualizar</button>
+            </div>
+            <div class="mt-4">
+                {{ $documentos->links('vendor.pagination.bootstrap-5') }}
+            </div>
+            <div>
+                <h2>Ordenamiento:</h2>
+            </div>
+            <hr>
+            <div class="card-body" style="border: none">
+                    @foreach ($documentos as $documento)
+                        <li class="d-flex mb-4">
+                            <div class="flex-shrink-0">
+                                <div class="thumbnail-wrapper mb-3">
+                                    @if ($documento->url_valida)
+                                        <a href="https://intranet.igp.gob.pe/redoc/assets/uploads/documentos/{{ $documento->pdf_convenio}}" target="_blank">
+                                            <img src="https://intranet.igp.gob.pe/redoc/themes/Mirage/images/documento-firma.png" class="img-thumbnail" alt="Thumbnail" >
+                                        </a>
+                                    @else
+                                        <img src="https://intranet.igp.gob.pe/redoc/themes/Mirage/images/no-file.png" class="img-thumbnail" alt="Thumbnail">
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="card-text artifact-info">
+                                    <span>
+                                        <b>NRO EXPEDIENTE:</b>
+                                        <span style="font-weight: bold; font-size: large;">
+                                            @if ($documento->nro_expediente)
+                                            {{ $documento->nro_expediente }}
+                                            @else
+                                                Sin expediente
+                                            @endif
+                                        </span>
+                                    </span> 
+                                    <span class="publisher-date">
+                                        <span>| Fecha del documento:</span> 
+                                        <span>{{ Carbon::parse($documento->fecha_documento)->locale('es')->isoFormat('dddd D [de] MMMM [de] YYYY') }}</span>
+                                    </span>
+                                    <br>
+                                    <div style="text-align: right">
+                                        <form action="{{ route('editar_documento', $documento->id) }}" method="GET">
+                                            <button type="submit" class="btn btn-info">Editar</button>
+                                        </form>
+                                        <a href="#" class="btn btn-danger">Eliminar</a>
                                     </div>
                                 </div>
-                                <hr>
+                                <div class="card-title artifact-title">
+                                    <span>
+                                        <b>{{$documento->nombre}}</b>
+                                    </span>
+                                </div>
+                                <div class="card-text artifact-abstract">
+                                    <span>Oficina: 
+                                        @foreach ($oficinas as $oficina )
+                                            @if ($documento->OrganoLinealId == $oficina->OrganoLinealId)
+                                                <b>{{ $oficina->nombre }}</b>
+                                            @endif
+                                        @endforeach
+                                    </span>
+                                    <p>
+                                        <span>Nro Correlativo:
+                                            <b>{{ $documento->nro_correlativo }}</b>
+                                        </span> 
+                                    </p>
+                                    <p>
+                                        <span>Tipo Documental:
+                                            @foreach ($tipoDoc as $tipo )
+                                                @if ($documento->tipo_documental_id == $tipo->id)
+                                                    <b>{{ $tipo->nombre }}</b>
+                                                @endif
+                                            @endforeach
+                                        </span> 
+                                    </p>
+                                </div>
                             </div>
-                        @endforeach
-                    </div>
-                <!-- Mostrar el número de la página actual y el número total de páginas -->
-                <p>Página {{ $documentos->currentPage() }} de {{ $documentos->lastPage() }}</p>
-
-                <!-- Mostrar los enlaces de paginación -->
-                <div>
-                    {{ $documentos->links() }}
-                </div>
+                        </li>
+                        <hr>
+                    @endforeach
+            </div>
         </div>
     </div>
 </body>
 </html>
-    
-
-  
-
