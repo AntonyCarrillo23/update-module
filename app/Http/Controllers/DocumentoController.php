@@ -12,17 +12,147 @@ class DocumentoController extends Controller
 
         return view('doc_db',['documentos' => $documentos]);
     }
+
+    public function sinc_std_redoc(Request $request, $id_tipo_doc){
+        {
+
+            $year = $request->input('anio_documento_std');
+            //dd($fecha_documento);
+            // Define las variables
+            $anio = $request->input('anio', $year); 
+            $unidadOrganica = $request->input('unidad_organica', '4'); 
+            $tipoDocumento = $request->input('tipo_documento', $id_tipo_doc); 
+            $correlativo = $request->input('correlativo', ''); 
+            
+            // Obtener el último correlativo del STD
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Basic dXNlcm1waWFwaTokVXNlck1QMUFQMSU=',
+                'Cookie' => 'PHPSESSID=k27808mn4mlo7b0ep2mmqlhsf1'
+            ])->post('https://intranet.igp.gob.pe/std/cInterfaseUsuario_SITD/mpi/ws_sad_consulta_correlativo.php', [
+                'anio' => $anio,
+                'unidad_organica' => $unidadOrganica,
+                'tipo_documento' => $tipoDocumento,
+                'correlativo' => $correlativo
+            ]);
+
+            if ($response->successful()) {
+                $resultado = $response->json();
+
+                if (!empty($resultado)) {
+                            $ultimoCorrelativoSTD = $resultado['sede'][0]['nCorrelativo'];
+                
+                            // Obtener el último correlativo de la BD
+                            $ultimoCorrelativoBD = DB::table('std_documents')
+                                ->where('anio', $anio)
+                                ->where('tipo_documental_id', $tipoDocumento)
+                                ->max('nro_correlativo');
+                    
+                            if (!$ultimoCorrelativoBD) {
+                                $ultimoCorrelativoBD = 0; 
+                            }
+                    
+                            // Comparar y realizar inserciones si es necesario
+                            if ($ultimoCorrelativoSTD > $ultimoCorrelativoBD) {
+                                $ultimoCorrelativoBD++;
+                    
+                                for ($i = $ultimoCorrelativoBD; $i <= $ultimoCorrelativoSTD; $i++) {
+                                    $response2 = Http::withHeaders([
+                                        'Content-Type' => 'application/json',
+                                        'Authorization' => 'Basic dXNlcm1waWFwaTokVXNlck1QMUFQMSU=',
+                                        'Cookie' => 'PHPSESSID=k27808mn4mlo7b0ep2mmqlhsf1'
+                                    ])->post('https://intranet.igp.gob.pe/std/cInterfaseUsuario_SITD/mpi/ws_sad_consulta_documento.php', [
+                                        'anio' => $anio,
+                                        'unidad_organica' => $unidadOrganica,
+                                        'tipo_documento' => $tipoDocumento,
+                                        'correlativo' => $i
+                                    ]);
+                    
+                                    if ($response2->successful()) {
+                                        $resultado2 = $response2->json();
+                                        foreach ($resultado2['sede'] as $product2) {
+                                            $cAsunto = $product2['cAsunto'];
+                                            $iCodOficinaRegistro = $product2['iCodOficinaRegistro'];
+                                            $cCodificacion = $product2['cCodificacion'];
+                                            $cCodTipoDoc = $product2['cCodTipoDoc'];
+                                            $fFecDocumento = $product2['fFecDocumento'];
+                                            $cNombreNuevo = $product2['cNombreNuevo'];
+                                            $anio = date('Y', strtotime($fFecDocumento));
+            
+                                            $cadena =$cCodificacion;
+                                            // Divide la cadena usando el primer guion como delimitador
+                                            $partes = explode('-', $cadena, 3);
+                                    
+                                            // Combina las dos primeras partes para obtener el número de expediente
+                                            $numeroExpediente = $partes[0] . '-' . $partes[1];
+                                            $oficina_std=DB::table('oficina_std')
+                                                    ->select('idOrg_Lin_std')
+                                                    ->where('idOficina',$iCodOficinaRegistro)
+                                                    ->first();
+            
+                                            if ($oficina_std) {
+                                                        $idOrg_Lin_std = $oficina_std->idOrg_Lin_std;
+                                                    } else {
+                                                        $idOrg_Lin_std = null; // o maneja el caso en que no se encuentre ningún registro
+                                            }
+                                            // Determinar tipo_documental_id basado en cCodTipoDoc
+                                            //$tipo_documental_id = $this->getTipoDocumentalId($cCodTipoDoc);
+                                            
+                                            // Insertar en la base de datos
+                                            DB::table('std_documents')->insert([
+                                                'asunto' => $cAsunto,
+                                                'nro_correlativo' => $i,
+                                                'anio' => $anio,
+                                                'OrganoLinealId' => $idOrg_Lin_std,
+                                                'UnidadOrganicaId' => $iCodOficinaRegistro,
+                                                'tipo_documental_id' => $cCodTipoDoc,
+                                                'cCodificacion' => $cCodificacion,
+                                                'fFecDocumento' => $fFecDocumento,
+                                                'cNombreNuevo' => $cNombreNuevo,
+                                                'nro_expediente' =>$numeroExpediente
+                                            ]);
+                                        }
+                                    } else {
+                                        return response()->json(['error' => 'Error al consultar el documento'], 500);
+                                    }
+                                }
+                                //return response()->json('Datos insertados en la DB', 200);
+                                session()->flash('success', 'Datos insertados correctamente.');
+                            } else {
+                                session()->flash('success', 'El tipo documental se encuentra actualizado');
+                            }
+                } else{
+                     session()->flash('error', 'No encontraron datos para actualizar');
+                }
+            } else {
+                //return response()->json(['error' => 'Error al consultar el correlativo'], 500);
+                session()->flash('error', 'Error al consultar el correlativo');
+                return redirect('listar');
+            }
+        } 
+    }
     public function extraer_documentos(){
+        /*$user=DB::table('user')
+            ->get();
         
-        $documentos = DB::table('documento')
-                        ->where('OrganoLinealId',25)
-                        ->where('enabled',1)
-                        ->orderBy('fecha_documento','desc')
-                        ->paginate(10);
+        $organoLinealUser=7;
+
+        $documentos = DB::table('std_documents')
+                    ->join('oficina_std', 'std_documents.OrganoLinealId', '=', 'oficina_std.id_OrganoLineal')
+                    ->select('std_documents.asunto', 'oficina_std.NomOficina')
+                    ->get();*/
+        $organoLinealUser=4;
+        $documentos = DB::table('std_documents')
+                        ->where('UnidadOrganicaId',$organoLinealUser)
+                        ->orderBy('fFecDocumento','desc')
+                        ->orderBy('nro_correlativo','desc')
+                        ->paginate(10,['*'], 'page_docs');
+
+
         $url_base_doc='https://intranet.igp.gob.pe/redoc/assets/uploads/documentos/';
         foreach ($documentos as $documento) {
                 // Verifica si la URL es accesible
-                $response = Http::head($url_base_doc.$documento->pdf_convenio);
+                $response = Http::head($url_base_doc.$documento->cNombreNuevo);
                 if($response->successful()){
                     $documento->url_valida =true;
                 }else{
@@ -30,23 +160,31 @@ class DocumentoController extends Controller
                 }
                 
         }
-        //$tipo_doc=$documentos['tipo_documental_id'];
-        $oficinas=DB::table('organos_lineales')
+
+        $tipo_docs_std=DB::table('tipo_documento_STD')
                         ->get();
 
-        $tipoDoc=DB::table('tipo_documental')
-                    ->get();
+        $tipo_docs_for_modal=DB::table('tipo_documento_STD')
+                        ->paginate(50,['*'], 'page_modal');
+        //$tipo_doc=$documentos['tipo_documental_id'];
+        $oficinas=DB::table('oficina_std')
+                        ->get();
+
+       /* $tipoDoc=DB::table('tipo_documento_std')
+                    ->get();*/
 
         return view('listar',[
             'documentos' => $documentos,
+            'tipo_docs_std'=>$tipo_docs_std,
             'oficinas'=>$oficinas,
-            'tipoDoc' => $tipoDoc
+            'tipo_docs_for_modal'=>$tipo_docs_for_modal
+            //'tipoDoc' => $tipoDoc
         ]);
     }
+
     public function editar_documento($id){
-        $doc_update=DB::table('documento')
+        $doc_update=DB::table('std_documents')
         ->where('id',$id)
-        ->where('enabled',1)
         ->first();
 
         $serie_name_doc=DB::table('serie')
@@ -109,7 +247,7 @@ class DocumentoController extends Controller
         return redirect()->route('listar')->with('success', 'Documento actualizado con éxito');
     }
 
-    public function sincronizar_redoc_std(Request $request){
+    /*public function sincronizar_redoc_std(Request $request){
         // Define las variables
         $anio = $request->input('anio', ''); 
         $unidadOrganica = $request->input('unidad_organica', ''); 
@@ -186,7 +324,13 @@ class DocumentoController extends Controller
                                 $fFecDocumento = $product2['fFecDocumento'];
                                 $cNombreNuevo = $product2['cNombreNuevo'];
                                 $anio = date('Y', strtotime($fFecDocumento));
-        
+
+                                $cadena =$cCodificacion;
+                                // Divide la cadena usando el primer guion como delimitador
+                                $partes = explode('-', $cadena, 3);
+                        
+                                // Combina las dos primeras partes para obtener el número de expediente
+                                $numeroExpediente = $partes[0] . '-' . $partes[1];
                                 // Determinar tipo_documental_id basado en cCodTipoDoc
                                 //$tipo_documental_id = $this->getTipoDocumentalId($cCodTipoDoc);
         
@@ -195,11 +339,12 @@ class DocumentoController extends Controller
                                     'asunto' => $cAsunto,
                                     'nro_correlativo' => $i,
                                     'anio' => $anio,
-                                    'UnidadOrganicaId' => $iCodOficinaRegistro,
+                                    'OrganoLinealId' => $iCodOficinaRegistro,
                                     'tipo_documental_id' => $cCodTipoDoc,
                                     'cCodificacion' => $cCodificacion,
                                     'fFecDocumento' => $fFecDocumento,
-                                    'cNombreNuevo' => $cNombreNuevo
+                                    'cNombreNuevo' => $cNombreNuevo,
+                                    'nro_expediente' =>$numeroExpediente
                                 ]);
                             }
                         } else {
@@ -225,6 +370,6 @@ class DocumentoController extends Controller
         } else {
             return response()->json(['error' => 'Error al consultar el correlativo'], 500);
         }
-    }
+    }*/
   
 }

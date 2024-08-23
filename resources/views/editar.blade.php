@@ -35,7 +35,7 @@
                                                                         Nro Expediente
                                                                     </label>
                                                                     <div class="col-sm-10">
-                                                                        <input class="form-control" type="text" id="nro_expediente" name="nro_expediente"  maxlength="250" style="width: 100%" value="{{$doc_update->nro_expediente}}">
+                                                                        <input class="form-control" type="text" id="nro_expediente" name="nro_expediente"  maxlength="250" style="width: 100%" value="{{$doc_update->nro_expediente}}" disabled>
                                                                     </div>
                                                                 </div>
                                                                 <div class="form-group">
@@ -44,7 +44,7 @@
                                                                         Asunto
                                                                     </label>
                                                                     <div class="col-sm-10">
-                                                                        <input class="form-control" type="text" id="id_asunto" name="asunto" maxlength="250" style="width: 100%" value="{{$doc_update->nombre}}">
+                                                                        <input class="form-control" type="text" id="id_asunto" name="asunto" maxlength="250" style="width: 100%" value="{{$doc_update->asunto}}" disabled>
                                                                     </div>
                                                                 </div>
                                                                 <div class="form-group">
@@ -53,8 +53,8 @@
                                                                         Serie
                                                                     </label>
                                                                     <div class="col-sm-4">
-                                                                        <select name="serie" id="id_serie" class="form-control select2 select2-hidden-accessible" disabled>
-                                                                            <option value="{{$doc_update->serie_id}}">{{$serie_name_doc->nombre}}</option>
+                                                                        <select name="serie" id="id_serie" class="form-control select2 select2-hidden-accessible">
+                                                                            <option value="{{$doc_update->serie_id}}">Serie</option>
                                                                         </select>
                                                                     </div>
                                                                     <label for="subserie" class="col-sm-2 control-label text-primary">
@@ -62,8 +62,8 @@
                                                                         SubSerie
                                                                     </label>
                                                                     <div class="col-sm-4">
-                                                                        <select name="subserie" id="id_subserie" class="form-control select2 select2-hidden-accessible" disabled>
-                                                                            <option value="{{$doc_update->subserie_id}}">{{$subSerie_name_doc->nombre}}</option>
+                                                                        <select name="subserie" id="id_subserie" class="form-control select2 select2-hidden-accessible">
+                                                                            <option value="{{$doc_update->subserie_id}}">Subserie</option>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -91,7 +91,7 @@
                                                                         Nro Correlativo
                                                                     </label>
                                                                     <div class="col-sm-10">
-                                                                        <input class="form-control" type="text" id="id_nro_correlativo" name="nro_correlativo"   style="width: 150px" value="{{$doc_update->nro_correlativo}}">
+                                                                        <input class="form-control" type="text" id="id_nro_correlativo" name="nro_correlativo"   style="width: 150px" value="{{$doc_update->nro_correlativo}}" disabled>
                                                                     </div>
                                                                     <label for="nro_folios" class="col-sm-2 control-label text-primary">
                                                                         <span class="text-danger">*</span>
@@ -107,7 +107,7 @@
                                                                         Fecha documento
                                                                     </label>
                                                                     <div class="col-sm-10">
-                                                                        <input class="form-control" type="date" id="id_fecha_documento" name="fecha_documento"  style="width: 150px" value="{{$doc_update->fecha_documento}}">
+                                                                        <input class="form-control" type="date" id="id_fecha_documento" name="fecha_documento"  style="width: 150px" value="{{$doc_update->fFecDocumento}}" disabled>
                                                                     </div>
                                                                     <label for="col-sm-2 control-label text-primary">Vinculo con Organo Lineal</label>
                                                                     <div class="col-sm-4">

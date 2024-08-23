@@ -13,4 +13,5 @@ Route::post('/obt-correlativo', [StdDocumentController::class, 'ObtCorrelativo']
 Route::post('/obt-documento', [StdDocumentController::class, 'ObtDocumento']);
 //Route::post('/regist-documento', [StdDocumentController::class, 'consultar']);
 Route::post('/sinc-doc', [DocumentoController::class, 'sincronizar_redoc_std']);
+Route::post('/sin_docs/{id}',[DocumentoController::class,'sinc_std_redoc'])->name('sin_docs');
 //Route::post('/insertar', [StdDocumentController::class, 'insertar']);
