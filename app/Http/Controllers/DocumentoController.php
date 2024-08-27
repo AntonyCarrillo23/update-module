@@ -14,7 +14,7 @@ class DocumentoController extends Controller
     }
 
     public function sinc_std_redoc(Request $request, $id_tipo_doc){
-        {
+        try{
 
             $year = $request->input('anio_documento_std');
             //dd($fecha_documento);
@@ -39,7 +39,7 @@ class DocumentoController extends Controller
             if ($response->successful()) {
                 $resultado = $response->json();
 
-                if (!empty($resultado)) {
+                if (!empty($resultado['sede'])) {
                             $ultimoCorrelativoSTD = $resultado['sede'][0]['nCorrelativo'];
                 
                             // Obtener el último correlativo de la BD
@@ -95,8 +95,6 @@ class DocumentoController extends Controller
                                                     } else {
                                                         $idOrg_Lin_std = null; // o maneja el caso en que no se encuentre ningún registro
                                             }
-                                            // Determinar tipo_documental_id basado en cCodTipoDoc
-                                            //$tipo_documental_id = $this->getTipoDocumentalId($cCodTipoDoc);
                                             
                                             // Insertar en la base de datos
                                             DB::table('std_documents')->insert([
@@ -113,24 +111,31 @@ class DocumentoController extends Controller
                                             ]);
                                         }
                                     } else {
-                                        return response()->json(['error' => 'Error al consultar el documento'], 500);
+                                        return response()->json(['error' => 'Error al consultar el documento!'], 500);
                                     }
                                 }
-                                //return response()->json('Datos insertados en la DB', 200);
-                                session()->flash('success', 'Datos insertados correctamente.');
+
+                                return response()->json([
+                                    'status' => 'success', 
+                                    'message' => 'Datos insertados correctamente'
+                                ]);
                             } else {
-                                session()->flash('success', 'El tipo documental se encuentra actualizado');
+                                return response()->json([
+                                    'status' => 'success', 
+                                    'message' => 'El tipo documental se encuentra actualizado'
+                                ]);
                             }
                 } else{
-                     session()->flash('error', 'No encontraron datos para actualizar');
+                    return response()->json(['status' => 'error', 'message' => 'No se encontraron documentos para el tipo documental!'], 404);
                 }
             } else {
-                //return response()->json(['error' => 'Error al consultar el correlativo'], 500);
-                session()->flash('error', 'Error al consultar el correlativo');
-                return redirect('listar');
+                return response()->json(['status' => 'error', 'message' => 'Error al consultar el correlativo!'], 500);
             }
-        } 
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
     }
+
     public function extraer_documentos(){
         /*$user=DB::table('user')
             ->get();
@@ -164,12 +169,12 @@ class DocumentoController extends Controller
         $tipo_docs_std=DB::table('tipo_documento_STD')
                         ->get();
 
-        $tipo_docs_for_modal=DB::table('tipo_documento_STD')
-                        ->paginate(50,['*'], 'page_modal');
         //$tipo_doc=$documentos['tipo_documental_id'];
         $oficinas=DB::table('oficina_std')
                         ->get();
-
+        $tipo_docs_for_modal=DB::table('tipo_documento_STD')
+                        ->get();
+                        //->paginate(50,['*'], 'page_modal');
        /* $tipoDoc=DB::table('tipo_documento_std')
                     ->get();*/
 
@@ -181,6 +186,7 @@ class DocumentoController extends Controller
             //'tipoDoc' => $tipoDoc
         ]);
     }
+
 
     public function editar_documento($id){
         $doc_update=DB::table('std_documents')

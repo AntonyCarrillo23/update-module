@@ -17,4 +17,4 @@ Route::get('/documentos',[DocumentoController::class,'prueba'])->name('documento
 //Route::view('/listar','listar');
 Route::get('/listar',[DocumentoController::class,'extraer_documentos'])->name('listar');
 Route::get('/editar/{id}',[DocumentoController::class,'editar_documento'])->name('editar_documento'); 
-Route::post('/update/{id}',[DocumentoController::class,'actualizar_documento'])->name('actualizar_documento'); 
+Route::post('/update/{id}',[DocumentoController::class,'actualizar_documento'])->name('actualizar_documento');
